@@ -3,90 +3,120 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentSections = document.querySelectorAll('.content-section');
     let activeChart = null; // To keep track of the current chart instance or instances
 
-    // Navigation
+    // --- Navigation Logic ---
+    function handleLinkActivation(linkElement) {
+        if (!linkElement) return; // Guard clause
+
+        const sectionId = linkElement.getAttribute('data-section');
+
+        navLinks.forEach(nav => {
+            nav.classList.remove('active-nav');
+            nav.removeAttribute('aria-current'); // ARIA accessibility
+        });
+        linkElement.classList.add('active-nav');
+        linkElement.setAttribute('aria-current', 'page'); // ARIA accessibility
+
+        contentSections.forEach(section => {
+            if (section.id === sectionId) {
+                section.classList.add('active');
+                loadSectionContent(sectionId); 
+            } else {
+                section.classList.remove('active');
+            }
+        });
+    }
+
     navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const sectionId = link.getAttribute('data-section');
+        link.setAttribute('role', 'menuitem'); // ARIA accessibility
+        link.setAttribute('tabindex', '0'); // Make LIs focusable
 
-            navLinks.forEach(nav => nav.classList.remove('active-nav'));
-            link.classList.add('active-nav');
+        link.addEventListener('click', (event) => {
+            handleLinkActivation(event.currentTarget);
+        });
 
-            contentSections.forEach(section => {
-                if (section.id === sectionId) {
-                    section.classList.add('active');
-                    loadSectionContent(sectionId); // Function to load/initialize content
-                } else {
-                    section.classList.remove('active');
-                }
-            });
+        link.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') { 
+                event.preventDefault(); 
+                handleLinkActivation(event.currentTarget);
+            }
         });
     });
-
-    // Initialize the first section (or a default one)
-    const initialSection = document.querySelector('.sidebar ul li[data-section="intro"]');
-    if (initialSection) {
-        initialSection.click();
+    
+    const sidebarNav = document.querySelector('.sidebar ul#nav-links'); 
+    if (sidebarNav) {
+        sidebarNav.setAttribute('role', 'menubar'); 
+        sidebarNav.setAttribute('aria-orientation', 'vertical');
     }
+
+    const initialSectionLink = document.querySelector('.sidebar ul li[data-section="intro"]');
+    if (initialSectionLink) {
+        handleLinkActivation(initialSectionLink); 
+    }
+    // --- End Navigation Logic ---
+
 
     function loadSectionContent(sectionId) {
-        // Destroy previous chart(s) if exists to prevent memory leaks and redraw issues
-        if (activeChart) {
-            if (typeof activeChart.destroy === 'function') {
-                activeChart.destroy();
-            } else if (Array.isArray(activeChart)) { // Handle multiple charts (e.g. Eta-squared)
-                activeChart.forEach(chart => { if (chart && typeof chart.destroy === 'function') chart.destroy(); });
-            }
-            activeChart = null;
+    // Destroy previous chart(s) if exists to prevent memory leaks and redraw issues
+    if (activeChart) {
+        if (typeof activeChart.destroy === 'function') {
+            activeChart.destroy();
+        } else if (Array.isArray(activeChart)) { // Handle multiple charts (e.g. Eta-squared)
+            activeChart.forEach(chart => { if (chart && typeof chart.destroy === 'function') chart.destroy(); });
         }
-
-        const sectionElement = document.getElementById(sectionId);
-        // Content for 'intro' and 'general-misconceptions' is mostly static in HTML.
-        // For 'sig-vs-effect', the HTML is in index.html, but needs JS setup.
-        // For others, content is fully injected by JS.
-
-        switch (sectionId) {
-            case 'intro':
-                // Static content in HTML, no dynamic JS needed here other than display
-                break;
-            case 'sig-vs-effect':
-                // HTML is in index.html, JS setup needed
-                setupSigVsEffectDemo();
-                break;
-            case 'cohens-d':
-                setupCohensDDemo(sectionElement);
-                break;
-            case 'hedges-g':
-                setupHedgesGDemo(sectionElement);
-                break;
-            case 'pearsons-r':
-                setupPearsonsRDemo(sectionElement);
-                break;
-            case 'eta-squared':
-                setupEtaSquaredDemo(sectionElement);
-                break;
-            case 'odds-ratio':
-                setupOddsRatioDemo(sectionElement);
-                break;
-            case 'relative-risk':
-                setupRelativeRiskDemo(sectionElement);
-                break;
-            case 'nnt-nnh':
-                setupNNTNNHDemo(sectionElement);
-                break;
-            case 'smd':
-                setupSMDDemo(sectionElement);
-                break;
-            case 'cramers-v':
-                setupCramersVDemo(sectionElement);
-                break;
-            case 'r-squared':
-                setupRSquaredDemo(sectionElement);
-                break;
-            case 'general-misconceptions':
-                // Static content in HTML
-                break;
-        }
+        activeChart = null;
     }
+
+    const sectionElement = document.getElementById(sectionId);
+    // Content for 'intro' and 'general-misconceptions' is mostly static in HTML.
+    // For 'sig-vs-effect', the HTML is in index.html, but needs JS setup.
+    // For others, content is fully injected by JS.
+
+    switch (sectionId) {
+        case 'intro':
+            // Static content in HTML, no dynamic JS needed here other than display
+            break;
+        case 'sig-vs-effect':
+            // HTML is in index.html, JS setup needed
+            // Use setTimeout to ensure DOM is fully rendered
+            setTimeout(() => {
+                setupSigVsEffectDemo();
+            }, 0);
+            break;
+        case 'cohens-d':
+            setupCohensDDemo(sectionElement);
+            break;
+        case 'hedges-g':
+            setupHedgesGDemo(sectionElement);
+            break;
+        case 'pearsons-r':
+            setupPearsonsRDemo(sectionElement);
+            break;
+        case 'eta-squared':
+            setupEtaSquaredDemo(sectionElement);
+            break;
+        case 'odds-ratio':
+            setupOddsRatioDemo(sectionElement);
+            break;
+        case 'relative-risk':
+            setupRelativeRiskDemo(sectionElement);
+            break;
+        case 'nnt-nnh':
+            setupNNTNNHDemo(sectionElement);
+            break;
+        case 'smd':
+            setupSMDDemo(sectionElement);
+            break;
+        case 'cramers-v':
+            setupCramersVDemo(sectionElement);
+            break;
+        case 'r-squared':
+            setupRSquaredDemo(sectionElement);
+            break;
+        case 'general-misconceptions':
+            // Static content in HTML
+            break;
+    }
+}
 
     // --- Helper for normal distribution PDF ---
     function normalPDF(x, mu, sigma) {
@@ -113,71 +143,88 @@ document.addEventListener('DOMContentLoaded', () => {
         return prob;
     }
 
-// More robust correlated data generation using Cholesky decomposition idea (simplified)
-        function generateCorrelatedDataPR(n, targetR) {
-            const mean = [0, 0];
-            const covMatrix = [
-                [1, targetR],
-                [targetR, 1]
-            ];
-        
-            // Simplified Cholesky factor L for 2x2:
-            // L = [[l11, 0], [l21, l22]]
-            // l11 = sqrt(C11) = 1
-            // l21 = C21 / l11 = targetR / 1 = targetR
-            // l22 = sqrt(C22 - l21^2) = sqrt(1 - targetR^2)
-            const L = [
-                [1, 0],
-                [targetR, Math.sqrt(1 - targetR * targetR)]
-            ];
-        
-            const points = [];
-            for (let i = 0; i < n; i++) {
-                // Generate two independent standard normal random numbers
-                const z1 = (Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random() - 3) / Math.sqrt(6/2); // Approx N(0,1) via Irwin-Hall
-                const z2 = (Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random() - 3) / Math.sqrt(6/2);
-        
-                // Apply Cholesky factor: X = mu + L * Z
-                const x = mean[0] + L[0][0] * z1 + L[0][1] * z2; // L[0][1] is 0
-                const y = mean[1] + L[1][0] * z1 + L[1][1] * z2;
-                points.push({ x: x*5+5, y: y*5+5 }); // Scale and shift for better visualization
-            }
-            return points;
+    // --- START: Pearson's R / R-Squared Helper Functions ---
+    function generateCorrelatedDataPR(n, targetR) {
+        const mean = [0, 0];
+        const covMatrix = [
+            [1, targetR],
+            [targetR, 1]
+        ];
+    
+        const L = [
+            [1, 0],
+            [targetR, Math.sqrt(1 - targetR * targetR)]
+        ];
+    
+        const points = [];
+        for (let i = 0; i < n; i++) {
+            let u1 = 0, u2 = 0;
+            for(let j=0; j<6; j++) { u1 += Math.random(); u2 += Math.random(); }
+            const z1 = u1 - 3; 
+            const z2 = u2 - 3;
+    
+            const x = mean[0] + L[0][0] * z1 + L[0][1] * z2;
+            const y = mean[1] + L[1][0] * z1 + L[1][1] * z2;
+            points.push({ x: x*5+5, y: y*5+5 });
         }
-        
-        function calculatePearsonsR(points) {
-            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
-            const n = points.length;
-            if (n < 2) return 0;
-
-            points.forEach(p => {
-                sumX += p.x;
-                sumY += p.y;
-                sumXY += p.x * p.y;
-                sumX2 += p.x * p.x;
-                sumY2 += p.y * p.y;
-            });
-
-            const numerator = n * sumXY - sumX * sumY;
-            const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-            
-            if (denominator === 0) return 0;
-            return numerator / denominator;
+        return points;
     }
+    
+    function calculatePearsonsR(points) {
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+        const n = points.length;
+        if (n < 2) return 0;
+
+        points.forEach(p => {
+            sumX += p.x;
+            sumY += p.y;
+            sumXY += p.x * p.y;
+            sumX2 += p.x * p.x;
+            sumY2 += p.y * p.y;
+        });
+
+        const numerator = n * sumXY - sumX * sumY;
+        const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+        
+        if (denominator === 0) return 0;
+        return numerator / denominator;
+    } // <<<< CRITICAL FIX: ADDED THIS MISSING CLOSING BRACE
+    // --- END: Pearson's R / R-Squared Helper Functions ---
+
 
     // --- START: Significance vs. Effect Size Demo ---
     function setupSigVsEffectDemo() {
-        // Elements are already in HTML for this section
-        const sampleSizeSlider = document.getElementById('svs-sample-size');
-        const meanDiffSlider = document.getElementById('svs-mean-diff');
-        const stdDevSlider = document.getElementById('svs-std-dev');
-        const sampleSizeVal = document.getElementById('svs-sample-size-val');
-        const meanDiffVal = document.getElementById('svs-mean-diff-val');
-        const stdDevVal = document.getElementById('svs-std-dev-val');
-        const cohensDOutput = document.getElementById('svs-cohens-d');
-        const pValueOutput = document.getElementById('svs-p-value');
-        const ctx = document.getElementById('sigVsEffectChart').getContext('2d');
-        let currentChart; // Specific to this demo's chart
+    // Elements are already in HTML for this section
+    const canvasElement = document.getElementById('sigVsEffectChart'); 
+    if (!canvasElement) {
+        console.error("ERROR: Canvas element with ID 'sigVsEffectChart' not found in the DOM for sig-vs-effect demo!");
+        return; 
+    }
+
+    const sampleSizeSlider = document.getElementById('svs-sample-size');
+    const meanDiffSlider = document.getElementById('svs-mean-diff');
+    const stdDevSlider = document.getElementById('svs-std-dev');
+    const sampleSizeVal = document.getElementById('svs-sample-size-val');
+    const meanDiffVal = document.getElementById('svs-mean-diff-val');
+    const stdDevVal = document.getElementById('svs-std-dev-val');
+    const cohensDOutput = document.getElementById('svs-cohens-d');
+    const pValueOutput = document.getElementById('svs-p-value');
+    
+    // Check if all required elements exist
+    if (!sampleSizeSlider || !meanDiffSlider || !stdDevSlider || 
+        !sampleSizeVal || !meanDiffVal || !stdDevVal || 
+        !cohensDOutput || !pValueOutput) {
+        console.error("Required elements not found for sig-vs-effect demo!");
+        return;
+    }
+
+    try {
+        const ctx = canvasElement.getContext('2d'); 
+        if (!ctx) {
+            console.error("Failed to get canvas context for sig-vs-effect demo!");
+            return;
+        }
+        let currentChart; 
 
         function updateDemo() {
             const n = parseInt(sampleSizeSlider.value);
@@ -188,25 +235,25 @@ document.addEventListener('DOMContentLoaded', () => {
             meanDiffVal.textContent = meanDiff.toFixed(2);
             stdDevVal.textContent = sd.toFixed(2);
 
-            const d = meanDiff / sd;
+            const d = sd > 0 ? meanDiff / sd : 0; // Avoid division by zero if sd is 0
             cohensDOutput.textContent = d.toFixed(2);
 
-            const se = sd * Math.sqrt(2 / n); 
-            const t = meanDiff / se;
-            let p;
-            // Simplified p-value logic (for illustration, not for rigorous stats)
-            if (n < 5 || sd <= 0) { // Basic checks
-                p = "N/A (Invalid inputs)";
-            } else {
-                 // Using a very rough approximation based on z-score for simplicity.
-                 // A real app would use a t-distribution CDF library (like jStat).
-                p = 2 * (1 - standardNormalCDF(Math.abs(t))); 
+            let p_text = "N/A";
+            if (sd > 0 && n >= 5) { // Added check for sd > 0
+                const se = sd * Math.sqrt(2 / n); 
+                const t = meanDiff / se;
+                let p = 2 * (1 - standardNormalCDF(Math.abs(t))); 
+                p_text = p < 0.001 ? "< 0.001" : p.toFixed(3);
+            } else if (n < 5) {
+                p_text = "N too small";
+            } else if (sd <= 0) {
+                p_text = "SD invalid";
             }
             
-            pValueOutput.textContent = (typeof p === 'string') ? p : (p < 0.001 ? "< 0.001" : p.toFixed(3));
+            pValueOutput.textContent = p_text;
             
-            const data1 = generateNormalDistributionData(0, sd, 100, -3.5*sd, 3.5*sd);
-            const data2 = generateNormalDistributionData(meanDiff, sd, 100, meanDiff - 3.5*sd, meanDiff + 3.5*sd);
+            const data1 = sd > 0 ? generateNormalDistributionData(0, sd, 100, -3.5*sd, 3.5*sd) : [];
+            const data2 = sd > 0 ? generateNormalDistributionData(meanDiff, sd, 100, meanDiff - 3.5*sd, meanDiff + 3.5*sd) : [];
             
             if (currentChart) currentChart.destroy();
             currentChart = new Chart(ctx, {
@@ -223,15 +270,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     plugins: { title: { display: true, text: 'Distribution Overlap & p-value' }, tooltip: { enabled: false } }
                 }
             });
-            activeChart = currentChart; // Assign to global activeChart for cleanup by loadSectionContent
+            activeChart = currentChart; 
         }
 
         [sampleSizeSlider, meanDiffSlider, stdDevSlider].forEach(slider => {
-            slider.removeEventListener('input', updateDemo); // Remove old listeners if any
+            slider.removeEventListener('input', updateDemo); 
             slider.addEventListener('input', updateDemo);
         });
         updateDemo(); 
+    } catch (error) {
+        console.error("Error in sig-vs-effect demo:", error);
     }
+}
+
     // --- END: Significance vs. Effect Size Demo ---
 
     // --- START: Cohen's d Demo ---
@@ -282,13 +333,11 @@ document.addEventListener('DOMContentLoaded', () => {
             m2Val.textContent = mean2;
             sdVal.textContent = sd;
 
-            const d = (mean2 - mean1) / sd;
+            const d = sd > 0 ? (mean2 - mean1) / sd : 0;
             cdValue.textContent = d.toFixed(2);
 
-            const minRange = Math.min(mean1, mean2) - 3.5 * sd;
-            const maxRange = Math.max(mean1, mean2) + 3.5 * sd;
-            const data1 = generateNormalDistributionData(mean1, sd, 100, minRange, maxRange);
-            const data2 = generateNormalDistributionData(mean2, sd, 100, minRange, maxRange);
+            const data1 = sd > 0 ? generateNormalDistributionData(mean1, sd, 100, Math.min(mean1, mean2) - 3.5 * sd, Math.max(mean1, mean2) + 3.5 * sd) : [];
+            const data2 = sd > 0 ? generateNormalDistributionData(mean2, sd, 100, Math.min(mean1, mean2) - 3.5 * sd, Math.max(mean1, mean2) + 3.5 * sd) : [];
             
             if (currentChart) currentChart.destroy();
             currentChart = new Chart(ctx, {
@@ -330,9 +379,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label for="hg-sd">Std Dev (pooled, SD): <span id="hg-sd-val">10</span></label>
                 <input type="range" id="hg-sd" min="1" max="30" value="10" step="0.5">
                 <label for="hg-n1">Sample Size N1: <span id="hg-n1-val">15</span></label>
-                <input type="range" id="hg-n1" min="2" max="100" value="15" step="1"> <!-- Min 2 for df -->
+                <input type="range" id="hg-n1" min="2" max="100" value="15" step="1"> 
                 <label for="hg-n2">Sample Size N2: <span id="hg-n2-val">15</span></label>
-                <input type="range" id="hg-n2" min="2" max="100" value="15" step="1"> <!-- Min 2 for df -->
+                <input type="range" id="hg-n2" min="2" max="100" value="15" step="1">
 
                 <p>Uncorrected Cohen's d: <strong id="hg-cohens-d">0.50</strong></p>
                 <p>Calculated Hedges' g: <strong id="hg-value">0.4X</strong></p>
@@ -386,29 +435,29 @@ document.addEventListener('DOMContentLoaded', () => {
             let g_text = "N/A";
             if (sd > 0) {
                 const df = n1 + n2 - 2;
-                if (df > 0) { // Denominator for J must be non-zero
+                if (df > 0) { 
                     const J_denominator = 4 * df - 1;
-                    if (J_denominator !== 0) {
+                    if (J_denominator !== 0) { // Avoid division by zero for J factor
                         const J = 1 - (3 / J_denominator);
                         const g = d * J;
                         g_text = g.toFixed(2);
+                    } else {
+                        g_text = "N/A (df issue)";
                     }
                 }
             }
             hgValue_out.textContent = g_text;
 
-            const minRange = Math.min(mean1, mean2) - 3.5 * sd;
-            const maxRange = Math.max(mean1, mean2) + 3.5 * sd;
-            const data1 = generateNormalDistributionData(mean1, sd, 100, minRange, maxRange);
-            const data2 = generateNormalDistributionData(mean2, sd, 100, minRange, maxRange);
+            const data1_hg = sd > 0 ? generateNormalDistributionData(mean1, sd, 100, Math.min(mean1, mean2) - 3.5 * sd, Math.max(mean1, mean2) + 3.5 * sd) : [];
+            const data2_hg = sd > 0 ? generateNormalDistributionData(mean2, sd, 100, Math.min(mean1, mean2) - 3.5 * sd, Math.max(mean1, mean2) + 3.5 * sd) : [];
             
             if (currentChart_hg) currentChart_hg.destroy();
             currentChart_hg = new Chart(ctx_hg, {
                 type: 'line',
                 data: {
                     datasets: [
-                        { label: 'Group 1', data: data1, borderColor: 'rgb(75, 192, 192)', backgroundColor: 'rgba(75, 192, 192, 0.2)', fill: true, tension: 0.1, pointRadius: 0 },
-                        { label: 'Group 2', data: data2, borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgba(255, 99, 132, 0.2)', fill: true, tension: 0.1, pointRadius: 0 }
+                        { label: 'Group 1', data: data1_hg, borderColor: 'rgb(75, 192, 192)', backgroundColor: 'rgba(75, 192, 192, 0.2)', fill: true, tension: 0.1, pointRadius: 0 },
+                        { label: 'Group 2', data: data2_hg, borderColor: 'rgb(255, 99, 132)', backgroundColor: 'rgba(255, 99, 132, 0.2)', fill: true, tension: 0.1, pointRadius: 0 }
                     ]
                 },
                 options: {
@@ -427,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --- END: Hedges' g Demo ---
 
-        // --- START: Pearson's r Demo ---
+    // --- START: Pearson's r Demo ---
     function setupPearsonsRDemo(sectionElement) {
         sectionElement.innerHTML = `
             <h2>Pearson's r (Correlation Coefficient)</h2>
@@ -465,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>A study finds a Pearson's r of 0.25 between daily coffee consumption and lifespan. Headlines exclaim: "Coffee Makes You Live Longer!"
                 <br><strong>Problem:</strong> 1) Correlation is not causation. Coffee drinkers might have other healthy habits (e.g., more active, wealthier, better diet) that are the true causes. 2) An r of 0.25 (R² = 0.0625) is a small to medium effect, meaning coffee consumption is linearly associated with only about 6.25% of the variance in lifespan in this dataset. The headline grossly overstates both the causality and the magnitude of the relationship.</p>
             </div>
-        `; // End of sectionElement.innerHTML
+        `; 
 
         const strengthSelect_pr = document.getElementById('pr-correlation-strength');
         const numPointsSlider_pr = document.getElementById('pr-num-points');
@@ -475,17 +524,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx_pr = document.getElementById('pearsonsRChart').getContext('2d');
         let currentChart_pr;
 
-        // The helper functions `generateCorrelatedDataPR` and `calculatePearsonsR`
-        // were correctly moved outside to global scope of DOMContentLoaded.
-        // Now, define the local updatePearsonsR function for this demo:
-
-        function updatePearsonsR() { // <<<< THIS FUNCTION DEFINITION MUST BE INSIDE setupPearsonsRDemo
+        function updatePearsonsR() { 
             const targetR = parseFloat(strengthSelect_pr.value);
             const n = parseInt(numPointsSlider_pr.value);
             numPointsVal_pr.textContent = n;
             prTargetR_out.textContent = targetR.toFixed(2);
 
-            // These global helper functions are called here:
             const dataPoints = generateCorrelatedDataPR(n, targetR); 
             const actualR = calculatePearsonsR(dataPoints);
             prValue_out.textContent = actualR.toFixed(2);
@@ -511,15 +555,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             activeChart = currentChart_pr;
-        } // <<<< End of updatePearsonsR function
+        } 
 
-        // Event listeners and initial call also need to be inside setupPearsonsRDemo
         strengthSelect_pr.addEventListener('change', updatePearsonsR);
         numPointsSlider_pr.addEventListener('input', updatePearsonsR);
-        updatePearsonsR(); // Initial call
+        updatePearsonsR(); 
 
-    } // <<<< THIS IS THE CORRECT CLOSING BRACE FOR setupPearsonsRDemo (this would be line 516 if updatePearsonsR is properly inside)
-    // --- END: Pearson's r Demo ---
+    } 
     // --- END: Pearson's r Demo ---
 
     // --- START: Eta-squared Demo ---
@@ -580,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pieCtx_eta = document.getElementById('etaPieChart').getContext('2d');
         let barChartInstance_eta, pieChartInstance_eta;
 
-        const N_PER_GROUP_ETA = 30; // Fixed for simplicity
+        const N_PER_GROUP_ETA = 30; 
 
         function updateEtaSquared() {
             const m1 = parseFloat(m1S_eta.value);
@@ -595,26 +637,21 @@ document.addEventListener('DOMContentLoaded', () => {
             sdWithinV_eta.textContent = sdWithin;
 
             const means = [m1, m2, m3];
-            const k = means.length; // Number of groups
-            const N_total = N_PER_GROUP_ETA * k;
+            const k = means.length; 
             
             const grandMean = means.reduce((sum, val) => sum + val, 0) / k;
             
-            // SS_between = sum(n_group * (mean_group - grand_mean)^2)
             let ssBetween = 0;
             means.forEach(groupMean => {
                 ssBetween += N_PER_GROUP_ETA * Math.pow(groupMean - grandMean, 2);
             });
             
-            // SS_within (error) = sum((n_group - 1) * var_group)
-            // Assuming common variance (varWithin) for all groups
             const ssError = (N_PER_GROUP_ETA - 1) * varWithin * k;
 
             const ssTotal = ssBetween + ssError;
             const etaSquared = ssTotal > 0 ? ssBetween / ssTotal : 0;
             etaVal_out.textContent = etaSquared.toFixed(3);
 
-            // Bar Chart for Group Means
             if (barChartInstance_eta) barChartInstance_eta.destroy();
             barChartInstance_eta = new Chart(barCtx_eta, {
                 type: 'bar',
@@ -631,14 +668,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: {display:true, text:"Mean Score"} } }, plugins: {legend: {display:false}} }
             });
 
-            // Pie Chart for Variance
             if (pieChartInstance_eta) pieChartInstance_eta.destroy();
             pieChartInstance_eta = new Chart(pieCtx_eta, {
                 type: 'pie',
                 data: {
                     labels: [`Factor (${(etaSquared*100).toFixed(1)}%)`, `Error (${((1-etaSquared)*100).toFixed(1)}%)`],
                     datasets: [{
-                        data: [ssBetween, ssError], // or [etaSquared, 1-etaSquared] if normalized
+                        data: [ssBetween > 0 ? ssBetween : 0.0001, ssError > 0 ? ssError : 0.0001], // Avoid 0 for pie
                         backgroundColor: ['rgba(54, 162, 235, 0.8)', 'rgba(255, 99, 132, 0.8)'],
                         borderColor: ['#FFFFFF', '#FFFFFF'],
                         borderWidth: 2
@@ -675,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>Odds of event in Exposed Group (a/b): <strong id="or-odds-exposed">-</strong></p>
                 <p>Odds of event in Unexposed Group (c/d): <strong id="or-odds-unexposed">-</strong></p>
                 <p>Calculated Odds Ratio (OR): <strong id="or-value">-</strong></p>
-                <div class="chart-container" style="height:250px;"><canvas id="oddsRatioChart"></canvas></div> <!-- Bar chart of P(Event|Exposed) and P(Event|Unexposed) -->
+                <div class="chart-container" style="height:250px;"><canvas id="oddsRatioChart"></canvas></div> 
                 <p class="interpretation-note">OR > 1: Higher odds in exposed. OR < 1: Lower odds in exposed. OR = 1: No difference in odds.
                 <br>Example: OR=2 means the odds of the event are twice as high in the exposed group compared to the unexposed group.
                 </p>
@@ -736,16 +772,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             let calcOR_text = "N/A";
-            if (b > 0 && c > 0 && d > 0) { // Standard case
-                 calcOR_text = ((a * d) / (b * c)).toFixed(3);
-            } else if (b === 0 && c === 0 && a > 0 && d > 0) { // Perfect separation, a and d are non-zero
+            if (b > 0 && d > 0) { // Need b and d for odds calc for both groups
+                 if (c > 0) { // Need c for the standard OR formula denominator
+                    calcOR_text = ((a * d) / (b * c)).toFixed(3);
+                 } else if (a === 0) { // c is 0, if a is also 0, OR is undefined or 1 depending on convention
+                    calcOR_text = "0/0 or 1";
+                 } else { // c is 0, a > 0
+                    calcOR_text = "Infinity";
+                 }
+            } else if (b === 0 && a > 0 && d > 0 && c === 0) { // odds_exp=inf, odds_unexp=0/d=0 -> OR = inf
                 calcOR_text = "Infinity";
-            } else if (a === 0 && d === 0 && b > 0 && c > 0) { // Perfect separation, b and c are non-zero
+            } else if (d === 0 && c > 0 && b > 0 && a === 0) { // odds_unexp=inf, odds_exp=0/b=0 -> OR = 0
                 calcOR_text = "0.000";
-            } else if ((b===0 && a>0) || (d===0 && c>0)) { // One group has 0 in non-event cell
-                calcOR_text = "Infinity or 0 (due to zero cell)";
-            }
-
+            } // Other zero cell cases can be complex, Haldane correction often used for OR with zeros.
 
             orOddsExposed_out.textContent = oddsExp_text;
             orOddsUnexposed_out.textContent = oddsUnexp_text;
@@ -853,15 +892,18 @@ document.addEventListener('DOMContentLoaded', () => {
             rrRiskExposed_out.textContent = riskExp.toFixed(3);
             rrRiskUnexposed_out.textContent = riskUnexp.toFixed(3);
 
-            if (totalUnexp > 0 && riskUnexp > 0) { // Normal case, unexposed risk is not zero
+            if (totalUnexp > 0 && riskUnexp > 0) { 
                 calcRR_text = (riskExp / riskUnexp).toFixed(3);
-            } else if (totalUnexp > 0 && riskUnexp === 0 && riskExp > 0) { // Unexposed risk is zero, exposed risk is >0
+            } else if (totalUnexp > 0 && riskUnexp === 0 && riskExp > 0) { 
                 calcRR_text = "Infinity";
-            } else if (totalUnexp > 0 && riskUnexp === 0 && riskExp === 0) { // Both risks are zero
+            } else if (totalUnexp > 0 && riskUnexp === 0 && riskExp === 0) { 
                 calcRR_text = "Indeterminate (0/0)";
-            } else if (totalUnexp === 0) { // No unexposed group or zero total
-                calcRR_text = "N/A (No unexposed data)";
+            } else if (totalUnexp === 0 && totalExp > 0) { 
+                 calcRR_text = "N/A (No unexposed group)";
+            } else if (totalUnexp === 0 && totalExp === 0) {
+                calcRR_text = "N/A (No data)";
             }
+
 
             rrValue_out.textContent = calcRR_text;
 
@@ -964,12 +1006,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let i = 1; i <= displayN; i++) {
                 let iconClass = "fas fa-user";
-                let iconColor = "#cccccc"; // Neutral grey
+                let iconColor = "#cccccc"; 
                 let titleText = "No additional effect relative to control";
                 if (i === 1) { 
                     if (type === 'nnt') {
                         iconClass = "fas fa-user-check"; iconColor = "green"; titleText = "One additional person benefits";
-                    } else { // nnh
+                    } else { 
                         iconClass = "fas fa-user-injured"; iconColor = "red"; titleText = "One additional person harmed";
                     }
                 }
@@ -980,10 +1022,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             let explanationText = "";
-            if (type === 'nnt') {
-                explanationText = `<p>Treat <strong>${roundedN}</strong>: <strong>1</strong> additional person benefits.</p>`;
-            } else {
-                explanationText = `<p>Treat <strong>${roundedN}</strong>: <strong>1</strong> additional person harmed.</p>`;
+            if (isFinite(roundedN) && roundedN > 0) { // only show text if N is a valid positive number
+                if (type === 'nnt') {
+                    explanationText = `<p>Treat <strong>${roundedN}</strong>: <strong>1</strong> additional person benefits.</p>`;
+                } else {
+                    explanationText = `<p>Treat <strong>${roundedN}</strong>: <strong>1</strong> additional person harmed.</p>`;
+                }
             }
             return visHtml + explanationText;
         }
@@ -997,15 +1041,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const arr = cer - eer;
             nntArrOutput.textContent = arr.toFixed(3);
 
-            if (arr > 0) { // Benefit
+            if (arr > 0) { 
                 const nnt = 1 / arr;
                 nntValueOutput.textContent = nnt.toFixed(1);
                 nntVisEl.innerHTML = createNNIconVisualization(nnt, 'nnt');
-            } else if (arr < 0) { // Harm for this outcome
+            } else if (arr < 0) { 
                 const nnh_for_outcome = 1 / Math.abs(arr);
                 nntValueOutput.textContent = `Harmful (NNH=${nnh_for_outcome.toFixed(1)})`;
                 nntVisEl.innerHTML = createNNIconVisualization(nnh_for_outcome, 'nnh');
-            } else { // arr = 0
+            } else { 
                 nntValueOutput.textContent = "N/A (No difference)";
                 nntVisEl.innerHTML = "<p>No change in risk between groups.</p>";
             }
@@ -1020,15 +1064,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const ari = eer_adv - cer_adv;
             nnhAriOutput.textContent = ari.toFixed(3);
 
-            if (ari > 0) { // Harm
+            if (ari > 0) { 
                 const nnh = 1 / ari;
                 nnhValueOutput.textContent = nnh.toFixed(1);
                 nnhVisEl.innerHTML = createNNIconVisualization(nnh, 'nnh');
-            } else if (ari < 0) { // Benefit for this "adverse" outcome (i.e., adverse event less likely)
+            } else if (ari < 0) { 
                 const nnt_for_adverse = 1 / Math.abs(ari);
                 nnhValueOutput.textContent = `Beneficial (NNT=${nnt_for_adverse.toFixed(1)} for this AE)`;
                  nnhVisEl.innerHTML = createNNIconVisualization(nnt_for_adverse, 'nnt');
-            } else { // ari = 0
+            } else { 
                 nnhValueOutput.textContent = "N/A (No difference)";
                 nnhVisEl.innerHTML = "<p>No change in risk for this adverse event.</p>";
             }
@@ -1118,13 +1162,11 @@ document.addEventListener('DOMContentLoaded', () => {
             mean2ValEl.textContent = mean2.toFixed(1);
             sdValEl.textContent = sd.toFixed(1);
             
-            const smd = sd > 0 ? (mean1 - mean2) / sd : 0; // Assuming lower score is better for treatment
+            const smd = sd > 0 ? (mean1 - mean2) / sd : 0; 
             smdOutEl.textContent = smd.toFixed(2);
 
-            const minRange = Math.min(mean1, mean2) - 3.5 * sd;
-            const maxRange = Math.max(mean1, mean2) + 3.5 * sd;
-            const data1 = generateNormalDistributionData(mean1, sd, 100, minRange, maxRange);
-            const data2 = generateNormalDistributionData(mean2, sd, 100, minRange, maxRange);
+            const data1 = sd > 0 ? generateNormalDistributionData(mean1, sd, 100, Math.min(mean1, mean2) - 3.5 * sd, Math.max(mean1, mean2) + 3.5 * sd) : [];
+            const data2 = sd > 0 ? generateNormalDistributionData(mean2, sd, 100, Math.min(mean1, mean2) - 3.5 * sd, Math.max(mean1, mean2) + 3.5 * sd) : [];
 
             if (existingChart) existingChart.destroy();
             const newChart = new Chart(ctx, {
@@ -1214,39 +1256,35 @@ document.addEventListener('DOMContentLoaded', () => {
             cvC1Tot.textContent = c1; cvC2Tot.textContent = c2;
             cvN_out.textContent = N;
 
-            if (N === 0 || r1 === 0 || r2 === 0 || c1 === 0 || c2 === 0) { // Check for empty rows/cols
-                cvChi2_out.textContent = "N/A";
-                cvValue_out.textContent = "N/A";
-                cvDf_out.textContent = "1"; // for 2x2
-                return;
-            }
+            let chi2_val = 0;
+            let V_val_text = "N/A";
 
-            // Expected frequencies
-            const exp_a = (r1 * c1) / N;
-            const exp_b = (r1 * c2) / N;
-            const exp_c = (r2 * c1) / N;
-            const exp_d = (r2 * c2) / N;
+            if (N > 0 && r1 > 0 && r2 > 0 && c1 > 0 && c2 > 0) { 
+                const exp_a = (r1 * c1) / N;
+                const exp_b = (r1 * c2) / N;
+                const exp_c = (r2 * c1) / N;
+                const exp_d = (r2 * c2) / N;
 
-            let chi2 = 0;
-            if (exp_a > 0) chi2 += Math.pow(a - exp_a, 2) / exp_a;
-            if (exp_b > 0) chi2 += Math.pow(b - exp_b, 2) / exp_b;
-            if (exp_c > 0) chi2 += Math.pow(c - exp_c, 2) / exp_c;
-            if (exp_d > 0) chi2 += Math.pow(d - exp_d, 2) / exp_d;
+                chi2_val += Math.pow(a - exp_a, 2) / exp_a;
+                chi2_val += Math.pow(b - exp_b, 2) / exp_b;
+                chi2_val += Math.pow(c - exp_c, 2) / exp_c;
+                chi2_val += Math.pow(d - exp_d, 2) / exp_d;
             
-            cvChi2_out.textContent = chi2.toFixed(3);
+                const num_rows = 2;
+                const num_cols = 2;
+                const df = (num_rows - 1) * (num_cols - 1);
+                cvDf_out.textContent = df;
+                const min_dim_minus_1 = Math.min(num_rows, num_cols) - 1;
 
-            const num_rows = 2;
-            const num_cols = 2;
-            const df = (num_rows - 1) * (num_cols - 1);
-            cvDf_out.textContent = df;
-            const min_dim_minus_1 = Math.min(num_rows, num_cols) - 1;
-
-            if (min_dim_minus_1 === 0 || N === 0) { 
-                cvValue_out.textContent = "N/A";
+                if (min_dim_minus_1 > 0) { 
+                    const V = Math.sqrt(chi2_val / (N * min_dim_minus_1));
+                    V_val_text = V.toFixed(3);
+                }
             } else {
-                const V = Math.sqrt(chi2 / (N * min_dim_minus_1));
-                cvValue_out.textContent = V.toFixed(3);
+                cvDf_out.textContent = "1"; // Default for 2x2
             }
+            cvChi2_out.textContent = chi2_val > 0 ? chi2_val.toFixed(3) : (N > 0 ? "0.000" : "N/A");
+            cvValue_out.textContent = V_val_text;
         }
         [cvA_in, cvB_in, cvC_in, cvD_in].forEach(input => {
             input.removeEventListener('input', updateCramersV);
@@ -1301,10 +1339,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx_rs = document.getElementById('rSquaredChart').getContext('2d');
         let currentChart_rs;
 
-        // Re-use pearson's r data generation and calculation
-        // generateCorrelatedDataPR(n, desiredR)
-        // calculatePearsonsR(points)
-
         function calculateRegressionLine(points) {
             const n = points.length;
             if (n < 2) return { slope: 0, intercept: 0, predictions: [] };
@@ -1317,18 +1351,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 sumX2 += p.x * p.x;
             });
 
-            const slope_val = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const slope_val = (n * sumX2 - sumX * sumX) !== 0 ? (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX) : 0;
             const intercept_val = (sumY - slope_val * sumX) / n;
             
-            // Create line points for charting based on min/max X
             if (points.length === 0) return { slope: 0, intercept: 0, predictions: [] };
             const xValues = points.map(p => p.x);
             const minX = Math.min(...xValues);
             const maxX = Math.max(...xValues);
-            const linePoints = [
+             const linePoints = (isFinite(minX) && isFinite(maxX)) ? [
                 {x: minX, y: slope_val * minX + intercept_val},
                 {x: maxX, y: slope_val * maxX + intercept_val}
-            ];
+            ] : [];
+
 
             return { slope: slope_val, intercept: intercept_val, predictions: linePoints };
         }
@@ -1362,11 +1396,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         {
                             label: 'Regression Line',
                             data: predictions,
-                            type: 'line', // Overlay line chart
+                            type: 'line', 
                             borderColor: 'rgba(54, 162, 235, 1)',
                             backgroundColor: 'rgba(54, 162, 235, 1)',
                             fill: false,
-                            tension: 0, // Straight line
+                            tension: 0, 
                             pointRadius: 0,
                             borderWidth: 2
                         }

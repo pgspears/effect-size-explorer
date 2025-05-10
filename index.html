@@ -67,7 +67,46 @@
             </section>
 
             <section id="sig-vs-effect" class="content-section">
-                <!-- Content from previous response -->
+                            <h1>Statistical Significance vs. Practical Significance (Effect Size)</h1>
+            <p>A common point of confusion is the difference between statistical significance (p-values) and effect size. They answer different questions:</p>
+            <ul>
+                <li><strong>Statistical Significance (p-value):</strong> How likely is it that an observed effect in a sample is due to random chance, assuming there's no real effect in the population? A small p-value (e.g., < 0.05) suggests the effect is unlikely to be just chance.</li>
+                <li><strong>Effect Size:</strong> How large or meaningful is the observed effect? It quantifies the magnitude of the difference or relationship.</li>
+            </ul>
+            <p>It's crucial to understand that a "statistically significant" result does not automatically mean the effect is large, important, or practically useful. With a large enough sample size, even a tiny, trivial effect can become statistically significant.</p>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Sample Size, Effect Size, and P-value</h3>
+                <p>Adjust the sliders to see how sample size, mean difference (the "true" effect), and data variability (standard deviation) influence both the calculated effect size (Cohen's d) and the (simulated) p-value.</p>
+
+                <label for="svs-sample-size">Sample Size (per group): <span id="svs-sample-size-val">100</span></label>
+                <input type="range" id="svs-sample-size" min="10" max="1000" value="100" step="10">
+
+                <label for="svs-mean-diff">Mean Difference (M2 - M1): <span id="svs-mean-diff-val">0.2</span></label>
+                <input type="range" id="svs-mean-diff" min="0.01" max="2.0" value="0.2" step="0.01">
+                
+                <label for="svs-std-dev">Standard Deviation (common, SD): <span id="svs-std-dev-val">1.0</span></label>
+                <input type="range" id="svs-std-dev" min="0.5" max="3.0" value="1.0" step="0.1">
+
+                <p>Calculated Cohen's d: <strong id="svs-cohens-d">0.20</strong></p>
+                <p>Approximate p-value: <strong id="svs-p-value">0.0X</strong> (simulated)</p>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="sigVsEffectChart"></canvas>
+                </div>
+                <p class="interpretation-note">Observe how a small effect (small mean difference relative to SD) can become "statistically significant" with a large enough sample size. Conversely, a larger true effect might not be statistically significant if the sample size is too small or variability is too high.</p>
+            </div>
+            <div class="misconception-box">
+                <strong>Misconception:</strong> "A statistically significant result (p < 0.05) always means an important or large effect."
+                <br><strong>Clarification:</strong> Statistical significance only tells you if an effect is likely not due to pure chance, given your sample size and data variability. It doesn't tell you the *size* or *practical importance* of the effect. A tiny, trivial effect can be statistically significant if the sample size is massive.
+            </div>
+            <div class="example-box">
+                <strong>Example:</strong> A study tests a new teaching method.
+                <ul>
+                    <li><strong>Scenario 1 (Small N, Large Effect):</strong> N=20 per group. New method group scores average 85, old method 75. SD=10. Cohen's d = (85-75)/10 = 1.0 (Large effect!). P-value might be around 0.001 (Significant). Here, significance reflects a large, meaningful difference.</li>
+                    <li><strong>Scenario 2 (Large N, Tiny Effect):</strong> N=10,000 per group. New method group scores average 75.5, old method 75. SD=10. Cohen's d = (75.5-75)/10 = 0.05 (Very small effect!). P-value might still be < 0.001 (Highly Significant due to large N). Here, significance is found, but the practical difference (0.5 points) is tiny.</li>
+                </ul>
+                <strong>Conclusion:</strong> Always report and consider both p-values and effect sizes in context.
+            </div>
             </section>
 
             <section id="cohens-d" class="content-section">
