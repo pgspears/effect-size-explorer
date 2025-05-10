@@ -44,7 +44,7 @@ The application currently explores the following effect size measures:
 
 ## How to Use
 
-1.  **Online:** Access the live application deployed on GitHub Pages: [https://pgspears.github.io/effect-size-explorer)/]
+1.  **Online:** Access the live application deployed on GitHub Pages: [https://pgspears.github.io/effect-size-explorer/]
 2.  **Locally:**
     *   Clone or download this repository.
     *   Open the `index.html` file in your web browser.
